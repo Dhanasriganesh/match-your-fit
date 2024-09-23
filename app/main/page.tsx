@@ -146,7 +146,7 @@ export default function Home() {
       </div>
       <div className="flex mt-7 font-serif align-middle justify-center mb-9">
         <div className="flex flex-col text-2xl">
-          Life isn't perfect,
+          Life isn&apos;t perfect,
           <span className="font-serif"> But your outfit can be</span>
         </div>
       </div>
@@ -183,7 +183,7 @@ export default function Home() {
 
         {imageSrc && (
           <div className="mt-6">
-            <img src={imageSrc} alt="Generated Outfit" className="rounded-lg" style={{ maxWidth: '300px', maxHeight: '300px' }} />
+            <Image src={imageSrc} alt="Generated Outfit" className="rounded-lg" style={{ maxWidth: '300px', maxHeight: '300px' }} />
             <div className="flex justify-center mt-4 gap-4">
               <button className="bg-gray-500 text-white text-sm py-2 px-6">
                 Similar Items

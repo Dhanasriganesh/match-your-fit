@@ -91,7 +91,7 @@ export default function Home() {
           </button>
           {loading && <p>Loading...</p>}
           {error && <p>Error: {error}</p>}
-          {imageUrl && <img src={imageUrl} alt="Generated" />}
+          {imageUrl && <Image src={imageUrl} alt="Generated" width={500} height={300}/>}
           <canvas ref={canvasRef} width={500} height={200} className="border border-gray-400"></canvas>
         </div>
       </div>

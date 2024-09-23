@@ -117,7 +117,7 @@ export default function Home() {
       <div className="flex m-7 mt-24 align-middle justify-center z-10">
         <h1 className="text-3xl">Grab the looks</h1>
       </div>
-     
+
       <div className="flex align-middle justify-center m-5 mb-12 gap-5">
         <div className="text-center h-5">
           <Image src="/Images/blazer.png" alt="Blazer" width={200} height={100} className="rounded-sm" />
@@ -194,6 +194,8 @@ export default function Home() {
             </div>
           </div>
         )}
+
+
       </div>
 
       <div className="footer mt-28 mb-9">

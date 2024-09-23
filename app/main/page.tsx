@@ -45,9 +45,11 @@ export default function Home() {
       const result = await response.blob();
       const objectURL = URL.createObjectURL(result);
       setImageSrc(objectURL);
-    } catch (error) {
-      console.error("Error:", error.message);
-    } finally {
+    } 
+    // catch (error) {
+    //   console.error("Error:", error.message);
+    // } 
+    finally {
       setLoading(false);
     }
   };

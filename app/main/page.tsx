@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { FaBars, FaTimes, FaShoppingBag } from 'react-icons/fa';
 import { FaHeart, FaUser } from "react-icons/fa6";
+import { TbMessageChatbot } from "react-icons/tb";
 import Link from "next/link";
 
 export default function Home() {
@@ -78,7 +79,7 @@ export default function Home() {
             <button onClick={toggleMenu} className="ml-4">
               {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
             </button>
-            <button className="flex "><FaHeart /></button>
+            <button className="flex "><TbMessageChatbot /></button>
             <button><FaShoppingBag /></button>
             <button><FaUser /></button>
           </div>
@@ -185,7 +186,7 @@ export default function Home() {
 
         {imageSrc && (
           <div className="mt-6">
-            <Image src={imageSrc} alt="Generated Outfit" className="rounded-lg" style={{ maxWidth: '300px', maxHeight: '300px' }} />
+            <Image src={imageSrc} alt="Generated Outfit" className="rounded-lg" width={300} height={300}/>
             <div className="flex justify-center mt-4 gap-4">
               <button className="bg-gray-500 text-white text-sm py-2 px-6">
                 Similar Items

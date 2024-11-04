@@ -31,6 +31,7 @@ export default function Home() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadFormat, setDownloadFormat] = useState('png'); // Added for format selection
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const toggleMenu = () => {
@@ -55,6 +56,31 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!imageUrl) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => {
+      canvas.width = image.width;
+      canvas.height = image.height;
+      ctx.drawImage(image, 0, 0);
+
+      // Download the image in the selected format
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL(`image/${downloadFormat}`);
+      link.download = `generated-image.${downloadFormat}`;
+      link.click();
+    };
+    image.src = imageUrl;
   };
 
   return (
@@ -91,8 +117,30 @@ export default function Home() {
           </button>
           {loading && <p>Loading...</p>}
           {error && <p>Error: {error}</p>}
-          {imageUrl && <Image src={imageUrl} alt="Generated" width={500} height={300}/>}
-          <canvas ref={canvasRef} width={500} height={200} className="border border-gray-400"></canvas>
+          {imageUrl && (
+            <>
+              <Image src={imageUrl} alt="Generated" width={500} height={300} />
+              <div className="mt-4">
+                <label htmlFor="format" className="mr-2">Choose format:</label>
+                <select
+                  id="format"
+                  value={downloadFormat}
+                  onChange={(e) => setDownloadFormat(e.target.value)}
+                  className="p-2 border border-gray-400 rounded-md mb-4"
+                >
+                  <option value="png">PNG</option>
+                  <option value="jpeg">JPG</option>
+                </select>
+                <button
+                  onClick={handleDownload}
+                  className="bg-blue-500 text-white p-2 rounded-md ml-2"
+                >
+                  Download Image
+                </button>
+              </div>
+            </>
+          )}
+          <canvas ref={canvasRef} width={500} height={200} className="border border-gray-400 hidden"></canvas>
         </div>
       </div>
 

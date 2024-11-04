@@ -1,30 +1,29 @@
 "use client"; // Add this line at the top
-import Image from "next/image";
-import { useState } from "react";
+// Rename the Next.js Image import to avoid conflicts
+import NextImage from "next/image";
+import { useState, useRef } from "react";
 import { FaBars, FaTimes, FaShoppingBag } from 'react-icons/fa';
-import { FaHeart, FaUser } from "react-icons/fa6";
+import { FaUser } from "react-icons/fa6";
 import { TbMessageChatbot } from "react-icons/tb";
 import Link from "next/link";
-
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [inputText, setInputText] = useState('');
   const [imageSrc, setImageSrc] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const [downloadFormat, setDownloadFormat] = useState('png');
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false); // State for chatbot modal
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
   const handleSubscribe = () => {
     alert(`Subscribed with ${email}`);
   };
-
   const generateImage = async () => {
     setLoading(true);
     const token = "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";
-
     try {
       const response = await fetch(
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
@@ -37,32 +36,47 @@ export default function Home() {
           body: JSON.stringify({ "inputs": inputText }),
         }
       );
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
       }
-
       const result = await response.blob();
       const objectURL = URL.createObjectURL(result);
       setImageSrc(objectURL);
-    } 
-    // catch (error) {
-    //   console.error("Error:", error.message);
-    // } 
-    finally {
+    } finally {
       setLoading(false);
     }
   };
-
+  const handleDownload = () => {
+    if (!imageSrc) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => {
+      canvas.width = image.width;
+      canvas.height = image.height;
+      ctx.drawImage(image, 0, 0);
+      // Download the image in the selected format
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL(`image/${downloadFormat}`);
+      link.download = `generated-image.${downloadFormat}`;
+      link.click();
+    };
+    image.src = imageSrc;
+  };
+  const toggleChatbot = () => {
+    setIsChatbotOpen(!isChatbotOpen);
+  };
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-pink-100 to-white">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-50"
         style={{ backgroundImage: "url('/Images/mainbackground.png')" }}>
       </div>
-      <div className="absolute inset-0 bg-black opacity-10">
-      </div>
+      <div className="absolute inset-0 bg-black opacity-10"></div>
 
       <div className="m-10">
         <div className="flex flex-row justify-between z-10">
@@ -79,7 +93,9 @@ export default function Home() {
             <button onClick={toggleMenu} className="ml-4">
               {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
             </button>
-            <button className="flex "><TbMessageChatbot /></button>
+            <button onClick={toggleChatbot} className="flex">
+              <TbMessageChatbot size={24} />
+            </button>
             <button><FaShoppingBag /></button>
             <button><FaUser /></button>
           </div>
@@ -99,13 +115,14 @@ export default function Home() {
           <h1 className="text-5xl">All Your Fit Is Here</h1>
           <h6 className="flex align-middle justify-center mt-4 z-10">Your Outfit Speaks Stronger, Choose It Well !!!!!!</h6>
           <div className="flex align-middle justify-center mt-8 z-10">
-            <Link href="/findfit"><button className="flex box-border box-content bg-black text-white text-sm py-2 px-12 z-10">
-              Find Fit
-            </button></Link>
+            <Link href="/findfit">
+              <button className="flex box-border box-content bg-black text-white text-sm py-2 px-12 z-10">
+                Find Fit
+              </button>
+            </Link>
           </div>
         </div>
       </div>
-
       <div className="flex m-10 align-middle justify-center flex-grow z-10">
         <div className="flex flex-row bg-white shadow-lg rounded-lg p-2 h-64">
           <div className="flex-1">
@@ -113,37 +130,57 @@ export default function Home() {
             <p className="text-lg">Life is too short to wear boring clothes.</p>
           </div>
           <div className="flex-1 flex justify-center items-center">
-            <Image src="/Images/fashion1.png" alt="Saturn" width={300} height={200} className="rounded-lg" />
+            <NextImage src="/Images/fashion1.png" alt="Saturn" width={300} height={200} className="rounded-lg" />
           </div>
         </div>
       </div>
       <div className="flex m-7 mt-24 align-middle justify-center z-10">
         <h1 className="text-3xl">Grab the looks</h1>
       </div>
-
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      {/* Chatbot Pop-up */}
+      <div className={`fixed bottom-4 right-4 transition-transform duration-300 ${isChatbotOpen ? 'transform translate-y-0' : 'transform translate-y-full'} z-50`}>
+        <button
+          onClick={toggleChatbot}
+          className="bg-blue-500 text-white p-3 rounded-full shadow-lg"
+        >
+          <TbMessageChatbot size={24} />
+        </button>
+        {isChatbotOpen && (
+          <div className="bg-white shadow-lg z-10 rounded-lg mt-2 w-80 h-96 overflow-hidden">
+            <iframe
+              src="https://copilotstudio.microsoft.com/environments/3bd0c546-3479-ee37-947a-994cb68f12d3/bots/cre6d_copilot1/webchat?__version__=2"
+              width="100%"
+              height="100%"
+              title="Chatbot"
+              style={{ border: 'none' }}
+            />
+          </div>
+        )}
+      </div>
       <div className="flex align-middle justify-center m-5 mb-12 gap-5">
         <div className="text-center h-5">
-          <Image src="/Images/blazer.png" alt="Blazer" width={200} height={100} className="rounded-sm" />
+          <NextImage src="/Images/blazer.png" alt="Blazer" width={200} height={100} className="rounded-sm" />
           <button className="bg-black text-white text-sm py-2 px-6 mt-2 ">BUY NOW</button>
         </div>
         <div className="text-center h-5">
-          <Image src="/Images/skirt.png" alt="Skirt" width={200} height={100} className="rounded-sm" />
+          <NextImage src="/Images/skirt.png" alt="Skirt" width={200} height={100} className="rounded-sm" />
           <button className="bg-black text-white text-sm py-2 px-6 mt-2 ">BUY NOW</button>
         </div>
         <div className="text-center">
-          <Image src="/Images/sherwani.png" alt="Sherwani" width={200} height={100} className="rounded-sm" />
+          <NextImage src="/Images/sherwani.png" alt="Sherwani" width={200} height={100} className="rounded-sm" />
           <button className="bg-black text-white text-sm py-2 px-6 mt-2 ">BUY NOW</button>
         </div>
         <div className="text-center">
-          <Image src="/Images/girl.png" alt="Girl Outfit" width={200} height={100} className="rounded-sm" />
+          <NextImage src="/Images/girl.png" alt="Girl Outfit" width={200} height={100} className="rounded-sm" />
           <button className="bg-black text-white text-sm py-2 px-6 mt-2 ">BUY NOW</button>
         </div>
         <div className="text-center">
-          <Image src="/Images/virat.png" alt="Girl Outfit" width={200} height={100} className="rounded-sm" />
+          <NextImage src="/Images/virat.png" alt="Girl Outfit" width={200} height={100} className="rounded-sm" />
           <button className="bg-black text-white text-sm py-2 px-6 mt-2 ">BUY NOW</button>
         </div>
         <div className="text-center">
-          <Image src="/Images/blued.png" alt="Girl Outfit" width={200} height={100} className="rounded-sm h-72 w-60" />
+          <NextImage src="/Images/blued.png" alt="Girl Outfit" width={200} height={100} className="rounded-sm h-72 w-60" />
           <button className="bg-black text-white text-sm py-2 px-6 mt-2 ">BUY NOW</button>
         </div>
       </div>
@@ -160,7 +197,7 @@ export default function Home() {
             <p className="text-lg">Customize your outfit.</p>
           </div>
           <div className="flex-1 flex justify-center items-center">
-            <Image src="/Images/featured.png" alt="Saturn" width={500} height={500} className="rounded-lg w-5px h-64" />
+            <NextImage src="/Images/featured.png" alt="Saturn" width={500} height={500} className="rounded-lg w-5px h-64" />
           </div>
         </div>
       </div>
@@ -181,12 +218,10 @@ export default function Home() {
         >
           Generate Image
         </button>
-
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
-
         {imageSrc && (
           <div className="mt-6">
-            <Image src={imageSrc} alt="Generated Outfit" className="rounded-lg" width={300} height={300}/>
+            <NextImage src={imageSrc} alt="Generated Outfit" className="rounded-lg" width={300} height={300} />
             <div className="flex justify-center mt-4 gap-4">
               <button className="bg-gray-500 text-white text-sm py-2 px-6">
                 Similar Items
@@ -195,12 +230,28 @@ export default function Home() {
                 Buy Now
               </button>
             </div>
+            <div className="mt-4">
+              <label htmlFor="format" className="mr-2">Choose format:</label>
+              <select
+                id="format"
+                value={downloadFormat}
+                onChange={(e) => setDownloadFormat(e.target.value)}
+                className="p-2 border border-gray-400 rounded-md mb-4"
+              >
+                <option value="png">PNG</option>
+                <option value="jpeg">JPG</option>
+              </select>
+              <button
+                onClick={handleDownload}
+                className="bg-blue-500 text-white p-2 rounded-md ml-2"
+              >
+                Download Image
+              </button>
+            </div>
           </div>
         )}
-
-
+        <canvas ref={canvasRef} width={500} height={200} className="border border-gray-400 hidden"></canvas>
       </div>
-
       <div className="footer mt-28 mb-9">
         <div className="flex justify-center items-center flex-col">
           <div className="flex flex-col text-center mb-4">
@@ -224,7 +275,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
       <div className="flex m-10 mb-20 align-bottom justify-center">
         <div className="flex flex-col text-center">
           <h2 className="text-2xl font-serif mb-4">Match Your FIT</h2>
